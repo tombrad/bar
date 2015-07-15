@@ -1,0 +1,75 @@
+Public indice, Z%, l%, pos1%, pos2%, pos3%, li%, c, comm, vende
+Public ultimalinea
+Public fecha3 As Variant
+Public Hist As Historico
+Public Dia As Diario
+Public Inv As Inventario
+Public Car As Carta
+Public Caj As Caja
+Public puntero, ultimo
+Public codigoconsumo, codigocomision As Variant
+Public vendedora, cantidad, consumo, valor, vip, fechadehoy
+Public monto, detalle, tipo
+Public descripcion, stock1, stock2, costo, porciones, test, test2
+Public primera, ultima, rebajado
+Public trago, precio1, precio2, ci, e, t
+Public f1, f2, f3, f4, f5, f6, f7, lin1, lin2, lin3 As Integer
+Global dConsumo(1000)
+Global dPrecios(100)
+Global dComision(100) As Double
+Global comision(50) As Double
+Global vendedoras(50) As Double
+Global vend(50)
+Global PatPorDefecto
+Global Inventario
+Global CartaTr
+Global Arcuadre
+Global fecha
+
+Type Historico
+    vendedora As String * 3
+    cantidad As String * 8
+    consumo As String * 40
+    valor As Double
+    codigoconsumo As Integer
+    vip As String * 1
+    fecha As String * 8
+End Type
+
+Type Diario
+    vendedora As String * 3
+    cantidad As String * 8
+    consumo As String * 10
+    valor As String * 8
+    codigoconsumo As String * 5
+    fecha As String * 8
+End Type
+
+Type Inventario
+    descripcion As String * 30
+    stock1 As Double
+    stock2 As Double
+    costo As Double
+    porciones As Double
+End Type
+
+Type Carta
+    trago As String * 40
+    precio1 As Double
+    precio2 As Double
+    f1 As Integer
+    f2 As Integer
+    f3 As Integer
+    f4 As Integer
+    f5 As Integer
+    f6 As Integer
+    f7 As Integer
+End Type
+
+Type Caja
+    fecha As String * 10
+    monto As Double
+    detalle As String * 40
+    tipo As String * 1
+End Type
+
