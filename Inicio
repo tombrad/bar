@@ -1,0 +1,4 @@
+Sub costeo()
+    Load FormIngreso
+    FormIngreso.Show
+End Sub
