@@ -1,0 +1,306 @@
+
+
+Rem ***************************************************************************
+Rem
+Rem
+Rem  FormFinDia
+Rem  saca el resumen de cualquier dia grabado en el
+Rem  archivo historico de movimientos
+Rem
+Rem ***************************************************************************
+Rem activacion del form
+Private Sub userform_Activate()
+    Rem nombres de archivos con sus paths
+    Arcuadre = "c:\transportes\cuadre.txt"
+    PatPorDefecto = "c:\Transportes\historia.txt"
+    Inventario = "c:\Transportes\cosas.txt"
+    CartaTr = "C:\transportes\cartatr.txt"
+    TextFecha3.SetFocus
+    Rem inicializa y llena vector de vendedoras
+    Rem ambos pasos estan de mas los modificare en un futuro lejano
+    vend(1) = "La Casa": vend(2) = "Ana": vend(3) = "Paty": vend(4) = "Sonia"
+    vend(5) = "Karin": vend(6) = "Michelle": vend(7) = "Priscilla": vend(8) = "Pilar"
+    vend(9) = "Lorena": vend(10) = "Gloria": vend(11) = "Conny": vend(12) = "Pamela"
+    vend(13) = "Romina": vend(14) = "Diana": vend(15) = "v1": vend(16) = "v2"
+    vend(17) = "v3": vend(18) = "v4": vend(19) = "v5": vend(20) = "v6"
+    Hoja4.Activate
+End Sub
+Rem resumen de un dia
+Private Sub CierreDiario_Click()
+    Dim totalventa, totaltarjetas, ttarjetas, tegresos, tingresos
+    Dim total, tragos(300), venta(350), k
+    ci = 0: e = 0: t = 0: lin1 = 0: lin2 = 0: lin3 = 0
+    Rem cerrar el dia
+    Rem escribe encabezados
+    Hoja4.Cells(4, 5) = "TOT VENTA"
+    Hoja4.Cells(5, 5) = "TOT EGRESOS"
+    Hoja4.Cells(6, 5) = "TOT TARJETAS"
+    Hoja4.Cells(7, 5) = "CAJA INICIAL"
+    Hoja4.Cells(3, 1) = "VEND"
+    Hoja4.Cells(3, 2) = "CANT"
+    Hoja4.Cells(3, 3) = "CONSUMO"
+    Hoja4.Cells(3, 4) = "VALOR"
+    Hoja4.Cells(3, 5) = "RESUMEN"
+    Hoja4.Cells(8, 5) = "RANKING"
+    Hoja4.Cells(8, 6) = "MONTO"
+    Hoja4.Cells(8, 7) = "VENDEDORA"
+    Hoja4.Cells(8, 8) = "VENTA"
+    Hoja4.Cells(8, 9) = "COMIS"
+    Hoja1.Cells(3, 2) = "CAJA INICIAL"
+    Hoja1.Cells(3, 3) = "EGRESOS"
+    Hoja1.Cells(3, 4) = "TARJETAS"
+    Rem limpia comisiones y totales
+    For Z% = 1 To 50
+        vendedoras(Z%) = 0
+        comision(Z%) = 0
+    Next Z%
+    totalventa = 0: pos1% = 0: pos2% = 0: pos3% = 0: li% = 1: k = 0
+    
+    Rem lista columnas de cada venta del día
+    Open PatPorDefecto For Random As 1 Len = 100
+    Get 1, 1, Hist
+    ultimo = Val(Hist.vendedora)
+    Close
+    For Z% = 2 To ultimo
+        indice = Z%
+        leer_historico
+        Rem selecciona movs de la fecha escogida y los coloca en la hoja
+        If TextFecha3.Text = Hist.fecha Then
+            li% = li% + 1
+                Hoja4.Cells(li% + 2, 1) = vendedora
+                Hoja4.Cells(li% + 2, 2) = cantidad
+                Hoja4.Cells(li% + 2, 3) = consumo
+                Hoja4.Cells(li% + 2, 4) = valor
+                vendedoras(vendedora) = vendedoras(vendedora) + Val(valor)
+                calcula_comision
+                comision(vendedora) = comision(vendedora) + Val(comm)
+                Rem calcula ventas separadas por tipo de trago
+                For c = 1 To 300
+                    Rem lee nombre del trago
+                    puntero = c
+                    leer_carta
+                    Rem acumula la venta del trago en vector venta()
+                    Rem y almacena su nombre en vector tragos()
+                    If consumo = trago Then
+                        venta(c) = venta(c) + valor
+                        tragos(c) = trago
+                        totalventa = totalventa + valor
+                    End If
+                Next c
+        End If
+    Next Z%
+    Rem escribe resumen
+    Rem resumen
+    li% = 0
+    Rem escribe ventas separadas por tipo de trago
+    For Z% = 1 To 300
+            If venta(Z%) <> 0 Then
+                li = li + 1
+                puntero = Z%
+                leer_carta
+                Hoja4.Cells(li% + 8, 5) = tragos(Z%)
+                Hoja4.Cells(li% + 8, 6) = venta(Z%)
+            End If
+    Next Z%
+    Rem calcula la linea final de las ventas separadas por trago
+    Rem para escribir la caja justo abajo
+    ultimalinea = li% + 16
+    Rem escribe titulos caja
+    Hoja4.Cells(pos1% + ultimalinea, 5) = "EGRESOS"
+    Hoja4.Cells(pos1% + ultimalinea, 6) = "MONTO"
+    Hoja4.Cells(pos1% + ultimalinea, 7) = "TARJETAS"
+    Hoja4.Cells(pos1% + ultimalinea, 8) = "MONTO"
+        
+    Rem escribe egresos
+    indice = 1
+    leer_caja
+    ultimo = Val(Caj.fecha)
+        For Z% = 2 To ultimo
+            indice = Z%
+            leer_caja
+                If Caj.tipo = "E" Then
+                    If TextFecha3.Text + "  " = Caj.fecha Then
+                        pos1% = pos1% + 1
+                        Hoja4.Cells(pos1% + ultimalinea, 5) = Caj.detalle
+                        Hoja4.Cells(pos1% + ultimalinea, 6) = Caj.monto
+                        ttarjetas = ttarjetas + monto
+                    End If
+                End If
+        Next Z%
+        
+    Rem escribe ventas con tarjeta
+        For Z% = 2 To ultimo
+            indice = Z%
+            leer_caja
+            Rem If monto <> 0 Then
+                If Caj.tipo = "T" Then
+                    If TextFecha3.Text + "  " = Caj.fecha Then
+                        pos2% = pos2% + 1
+                        Hoja4.Cells(pos2% + ultimalinea, 7) = Caj.detalle
+                        Hoja4.Cells(pos2% + ultimalinea, 8) = Caj.monto
+                        tegresos = tegresos + monto
+                    End If
+                End If
+            Rem End If
+        Next Z%
+        
+    Rem escribe ingresos
+        For Z% = 2 To ultimo
+            indice = Z%
+            leer_caja
+            Rem If monto <> 0 Then
+                If Caj.tipo = "I" Then
+                    If TextFecha3.Text + "  " = Caj.fecha Then
+                        pos3% = pos3% + 1
+                        Hoja4.Cells(pos3% + ultimalinea, 9) = Caj.detalle
+                        Hoja4.Cells(pos3% + ultimalinea, 10) = Caj.monto
+                        tingresos = tingresos + monto
+                    End If
+                End If
+            Rem End If
+        Next Z%
+    Rem imprime los totales
+    Hoja4.Cells(4, 6) = totalventa
+    Hoja4.Cells(3, 6) = TextFecha3.Text
+    Hoja4.Cells(6, 6) = tegresos
+    Hoja4.Cells(5, 6) = ttarjetas
+    Rem escribe ventas y comisiones vendedoras
+    comision(10) = 0
+    For Z% = 1 To 20
+        Hoja4.Cells(Z% + 8, 7) = vend(Z%)
+        Hoja4.Cells(Z% + 8, 8) = vendedoras(Z%)
+        Hoja4.Cells(Z% + 8, 9) = comision(Z%)
+    Next Z%
+    Unload FormFinDia
+End Sub
+Rem formatea fecha de ingreso en modo estandar
+Private Sub TextFecha3_Change()
+    If Len(TextFecha3) = 2 Then
+        TextFecha3.Text = TextFecha3.Text & "/"
+        TextFecha3.SelStart = Len(TextFecha3.Text)
+    ElseIf Len(TextFecha3.Text) = 5 Then
+        TextFecha3.Text = TextFecha3.Text & "/"
+        TextFecha3.SelStart = Len(TextFecha3.Text)
+    End If
+    fecha = TextFecha3.Text
+End Sub
+
+Rem escribe vendedoras, ventas y comisiones, lo borrare en un futuro lejano
+Private Sub resumen()
+Rem resumen diario
+    comision(10) = 0
+    For Z% = 1 To 20
+        Hoja4.Cells(Z% + 3, 10) = vend(Z%)
+        Hoja4.Cells(Z% + 3, 11) = vendedoras(Z%)
+        Hoja4.Cells(Z% + 3, 12) = comision(Z%)
+    Next Z%
+    
+    Unload FormFinDia
+    End Sub
+Rem lee la caja del dia lo borrare en un futuro lejano
+Public Sub leer_caja()
+Rem leer caja
+    Open Arcuadre For Random As 1 Len = 100
+        Get 1, indice, Caj
+        fecha = Caj.fecha
+        monto = Caj.monto
+        detalle = Caj.detalle
+        tipo = Caj.tipo
+    Close
+End Sub
+Rem graba la caja del dia lo borrare en un futuro lejano
+Public Sub grabar_caja()
+Rem grabar caja
+    Open Arcuadre For Random As 1 Len = 100
+        Get 1, 1, Caj
+        ultimo = Val(Caj.fecha)
+        If Val(ultimo) = 0 Then
+            ultimo = ultimo + 1
+        End If
+        puntero = ultimo + 1
+        Caj.fecha = puntero
+        Put 1, 1, Caj
+        Caj.fecha = TextFecha3.Text
+        Caj.monto = TextMonto.Text
+        Caj.detalle = TextDetalle.Text
+        Caj.tipo = ComboIE.Text
+        Put 1, puntero, Caj
+    Close
+End Sub
+Rem lee archivo historico de movimientos
+Public Sub leer_historico()
+Rem leer historico
+    Open PatPorDefecto For Random As 1 Len = 100
+        Get 1, indice, Hist
+        vendedora = Val(Hist.vendedora)
+        cantidad = Val(Hist.cantidad)
+        consumo = Hist.consumo
+        valor = Val(Hist.valor)
+        codigoconsumo = Val(Hist.codigoconsumo)
+        vip = Hist.vip
+        fecha = Hist.fecha
+    Close
+End Sub
+Rem lee carta de tragos
+Public Sub leer_carta()
+Rem leer registro carta de tragos desde archivo
+    Open CartaTr For Random As 1 Len = 100
+        Get 1, puntero, Car
+        trago = Car.trago
+        precio1 = Car.precio1
+        precio2 = Car.precio2
+        f1 = Car.f1
+        f2 = Car.f2
+        f3 = Car.f3
+        f4 = Car.f4
+        f5 = Car.f5
+        f6 = Car.f6
+        f7 = Car.f7
+    Close
+End Sub
+Rem calcula las comisiones lo mejorare en un futuro lejano
+Sub calcula_comision()
+comm = 0
+    If vip = "V" Then
+        If consumo = "CAMINO AL CIELO                         " Then comm = 3000
+        If consumo = "BACARDI LIMON                           " Then comm = 3000
+        If consumo = "RAPA NUI                                " Then comm = 3000
+        If consumo = "METROPOLIS                              " Then comm = 3000
+        If consumo = "ORGASMO                                 " Then comm = 3000
+        If consumo = "LEMON STONE                             " Then comm = 3000
+        If consumo = "BAILYS                                  " Then comm = 3000
+        If consumo = "CAMINO AL CIELO                         " Then comm = 3000
+        If consumo = "CHAMPAGNE                               " Then comm = 3000
+    ElseIf vip = "F" Then
+        If consumo = "CAMINO AL CIELO                         " Then comm = 2000
+        If consumo = "BACARDI LIMON                           " Then comm = 1000
+        If consumo = "RAPA NUI                                " Then comm = 2000
+        If consumo = "METROPOLIS                              " Then comm = 1000
+        If consumo = "ORGASMO                                 " Then comm = 2000
+        If consumo = "LEMON STONE                             " Then comm = 1000
+    End If
+End Sub
+Rem lista todo el historico solo para revisiones
+Private Sub CommandButton1_Click()
+    Todos_Los_Movimientos
+End Sub
+
+Rem lista todo el historico solo para revisiones
+Sub Todos_Los_Movimientos()
+Hoja5.Activate
+Open PatPorDefecto For Random As 1 Len = 100
+    Get 1, 1, Hist
+    ultimo = Val(Hist.vendedora)
+    Close
+li% = 0
+For Z% = 2 To ultimo + 1
+        indice = Z%
+        leer_historico
+            li% = li% + 1
+                Hoja5.Cells(li% + 2, 1) = Hist.fecha
+                Hoja5.Cells(li% + 2, 2) = vendedora
+                Hoja5.Cells(li% + 2, 3) = cantidad
+                Hoja5.Cells(li% + 2, 4) = consumo
+                Hoja5.Cells(li% + 2, 5) = valor
+    Next Z%
+End Sub
