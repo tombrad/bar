@@ -1,0 +1,106 @@
+Rem activar el formulario inicializa variables
+Rem los archivos llevan extension txt solo para que sea mas facil leer
+Rem con notepad son plaintext y pueden llevar cualquier extension (o ninguna)
+Private Sub userform_Activate()
+    Rem llena la combobox para ingresos/egresos/trjeta
+    ComboIE.AddItem "Ingreso"
+    ComboIE.AddItem "Egreso"
+    ComboIE.AddItem "Tarjeta Crédito"
+    Rem nombre y path de los archivos
+    Arcuadre = "c:\transportes\cuadre.txt"
+    PatPorDefecto = "c:\Transportes\historia.txt"
+    Inventario = "c:\Transportes\cosas.txt"
+    CartaTr = "C:\transportes\cartatr.txt"
+    TextFecha3.SetFocus
+    Hoja1.Activate
+End Sub
+Rem boton para grabar cada dato ingresado
+Private Sub CommandOKIE_Click()
+    If ComboIE.Text = "Ingreso" Then tipo = "I": lin1 = lin1 + 1: Hoja1.Cells(lin1 + 3, 2) = TextMonto.Text
+    If ComboIE.Text = "Egreso" Then tipo = "E": lin2 = lin2 + 1: Hoja1.Cells(lin2 + 3, 3) = TextMonto.Text
+    If ComboIE.Text = "Tarjeta Crédito" Then tipo = "T": lin3 = lin3 + 1: Hoja1.Cells(lin3 + 3, 4) = TextMonto.Text
+    Rem graba el movimiento
+    grabar_caja
+    TextMonto.Text = ""
+    TextDetalle.Text = ""
+    ComboIE.Text = ""
+    TextMonto.SetFocus
+End Sub
+
+Rem formatea el ingreso de la fecha en modo estandar
+Private Sub TextFecha3_Change()
+    If Len(TextFecha3) = 2 Then
+        TextFecha3.Text = TextFecha3.Text & "/"
+        TextFecha3.SelStart = Len(TextFecha3.Text)
+    ElseIf Len(TextFecha3.Text) = 5 Then
+        TextFecha3.Text = TextFecha3.Text & "/"
+        TextFecha3.SelStart = Len(TextFecha3.Text)
+    End If
+    fecha = TextFecha3.Text
+End Sub
+
+Rem lee la caja diaria
+Public Sub leer_caja()
+Rem leer caja
+    Open Arcuadre For Random As 1 Len = 100
+        Get 1, indice, Caj
+        fecha = Caj.fecha
+        monto = Caj.monto
+        detalle = Caj.detalle
+        tipo = Caj.tipo
+    Close
+End Sub
+
+Rem graba la caja diaria
+Public Sub grabar_caja()
+Rem grabar caja
+    Open Arcuadre For Random As 1 Len = 100
+        Get 1, 1, Caj
+        ultimo = Val(Caj.fecha)
+        If Val(ultimo) = 0 Then
+            ultimo = ultimo + 1
+        End If
+        puntero = ultimo + 1
+        Caj.fecha = puntero
+        Put 1, 1, Caj
+        Caj.fecha = TextFecha3.Text
+        Caj.monto = TextMonto.Text
+        Caj.detalle = TextDetalle.Text
+        Caj.tipo = ComboIE.Text
+        Put 1, puntero, Caj
+    Close
+End Sub
+
+Rem lee historico esto es inutil lo eliminare algun dia lejano
+Public Sub leer_historico()
+Rem leer historico
+    Open PatPorDefecto For Random As 1 Len = 100
+        Get 1, indice, Hist
+        vendedora = Val(Hist.vendedora)
+        cantidad = Val(Hist.cantidad)
+        consumo = Hist.consumo
+        valor = Val(Hist.valor)
+        codigoconsumo = Val(Hist.codigoconsumo)
+        vip = Hist.vip
+        fecha = Hist.fecha
+    Close
+End Sub
+
+Rem lee carta de tragos esto es inutil lo eliminare algun dia lejano
+Public Sub leer_carta()
+Rem leer registro carta de tragos desde archivo
+    Open CartaTr For Random As 1 Len = 100
+        Get 1, puntero, Car
+        trago = Car.trago
+        precio1 = Car.precio1
+        precio2 = Car.precio2
+        f1 = Car.f1
+        f2 = Car.f2
+        f3 = Car.f3
+        f4 = Car.f4
+        f5 = Car.f5
+        f6 = Car.f6
+        f7 = Car.f7
+    Close
+End Sub
+
